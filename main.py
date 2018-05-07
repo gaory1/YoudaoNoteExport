@@ -60,7 +60,7 @@ class YoudaoNoteSession(requests.Session):
             'editorType': 1,
             'cstk': self.cstk
         }
-        url = 'https://note.youdao.com/yws/api/personal/sync?method=download&keyfrom=web&cstk=%s' % self.cstk
+        url = 'https://note.youdao.com/yws/api/personal/sync?method=download-docx&keyfrom=web&cstk=%s' % self.cstk
         response = self.post(url, data = data)
         with open('%s/%s.xml' % (saveDir, id), 'w') as fp:
             fp.write(response.content)
