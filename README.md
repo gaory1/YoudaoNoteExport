@@ -1,5 +1,5 @@
 # YoudaoNoteExport
-导出有道云笔记，保存为JSON和XML文件。XML文件是笔记的内容，JSON文件是笔记的其它信息（包括标题、创建时间、修改时间等）
+导出有道云笔记，保存为JSON和DOCX文件。DOCX文件是笔记的内容，JSON文件是笔记的其它信息（包括标题、创建时间、修改时间等）
 
 使用方法：<br>
 python main.py 用户名 密码<br>
