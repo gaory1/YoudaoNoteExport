@@ -60,12 +60,18 @@ class YoudaoNoteSession(requests.Session):
             'editorType': 1,
             'cstk': self.cstk
         }
-        url = 'https://note.youdao.com/yws/api/personal/sync?method=download-docx&keyfrom=web&cstk=%s' % self.cstk
+        url = 'https://note.youdao.com/yws/api/personal/sync?method=download&keyfrom=web&cstk=%s' % self.cstk
         response = self.post(url, data = data)
         with open('%s/%s.xml' % (saveDir, id), 'w') as fp:
             fp.write(response.content)
 
-    def getFileRecursively(self, id, saveDir):
+    def getNoteDocx(self, id, saveDir):
+        url = 'https://note.youdao.com/ydoc/api/personal/doc?method=download-docx&fileId=%s&cstk=%s&keyfrom=web' % (id, self.cstk)
+        response = self.get(url)
+        with open('%s/%s.docx' % (saveDir, id), 'w') as fp:
+            fp.write(response.content)
+
+    def getFileRecursively(self, id, saveDir, doc_type):
         data = {
             'path': '/',
             'dirOnly': 'false',
@@ -95,28 +101,36 @@ class YoudaoNoteSession(requests.Session):
                         os.lstat(subDir)
                     except OSError:
                         os.mkdir(subDir)
-                    self.getFileRecursively(id, subDir)
+                    self.getFileRecursively(id, subDir, doc_type)
                 else:
                     with open('%s/%s.json' % (saveDir, id), 'w') as fp:
                         fp.write(json.dumps(entry,ensure_ascii=False).encode('utf-8'))
-                    self.getNote(id, saveDir)
+                    if doc_type == 'xml':
+                        self.getNote(id, saveDir)
+                    else: # docx
+                        self.getNoteDocx(id, saveDir)
                 count = count + 1
                 lastId = id
 
-    def getAll(self, saveDir):
+    def getAll(self, saveDir, doc_type):
         rootId = self.getRoot()
-        self.getFileRecursively(rootId, saveDir)
+        self.getFileRecursively(rootId, saveDir, doc_type)
 
 if __name__ == '__main__':
     if len(sys.argv) < 3:
-        print('args: <username> <password> [saveDir]')
+        print('args: <username> <password> [saveDir [doc_type]]' )
+        print('doc_type: xml or docx')
         sys.exit(1)
     username = sys.argv[1]
     password = sys.argv[2]
-    if len(sys.argv) == 4:
+    if len(sys.argv) >= 4:
         saveDir = sys.argv[3]
     else:
         saveDir = '.'
+    if len(sys.argv) >= 5:
+        doc_type = sys.argv[4]
+    else:
+        doc_type = 'xml'
     sess = YoudaoNoteSession()
     sess.login(username, password)
-    sess.getAll(saveDir)
+    sess.getAll(saveDir, doc_type)
